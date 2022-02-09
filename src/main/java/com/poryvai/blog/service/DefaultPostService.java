@@ -48,11 +48,6 @@ public class DefaultPostService implements PostService{
 
     @Override
     public void deletePostById(Long id)throws PostNotFoundException {
-        Optional<Post> post = postRepository.findById(id);
-
-        if (!post.isPresent()) {
-            throw new PostNotFoundException("Post Id:" + id + ", Not Available");
-        }
         postRepository.deleteById(id);
     }
 }

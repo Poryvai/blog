@@ -14,4 +14,10 @@ public interface PostService {
     public Post updatePost(Long id, Post post)throws PostNotFoundException;
 
     public void deletePostById(Long id)throws PostNotFoundException;
+
+    public Post fetchPostById(Long departmentId)throws PostNotFoundException;
+
+    public List<Post> fetchAllPostsByTitle(String title);
+
+    public List<Post> fetchAllPostsSortedByTitle();
 }

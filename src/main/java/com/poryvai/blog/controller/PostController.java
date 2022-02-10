@@ -34,26 +34,45 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Post>> fetchPostList(){
-       log.info("Inside fetchPostList of PostController");
-        List<Post> posts = postService.fetchPostList();
+    public ResponseEntity<List<Post>> fetchPostList(@RequestParam(value = "title", required = false) String title,
+                              @RequestParam(value = "sort", required = false) String sort) {
+        List<Post> posts;
+        log.info("Inside fetchAllPostsByTitle of PostController");
+        if (title != null) {
+            posts = postService.fetchAllPostsByTitle(title);
+        } else if (sort != null) {
+            log.info("Inside fetchAllPostsSortedByTitle of PostController");
+            posts = postService.fetchAllPostsSortedByTitle();
+        } else {
+            log.info("Inside fetchPostList of PostController");
+            posts = postService.fetchPostList();
+        }
+
         return ResponseEntity.ok().body(posts);
     }
 
-//    @PutMapping("/{id}")
-//    public ResponseEntity<Post> updatePost(@PathVariable("id") Long id,
-//                           @RequestBody Post post)throws PostNotFoundException {
-//        log.info("Inside updatePost of PostController, update data by id {}", id);
-//        if (post == null) {
-//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-//        }
-//        Post newDataPost = postService.updatePost(id, post);
-//        return ResponseEntity.ok().body(newDataPost);
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<Post> updatePost(@PathVariable("id") Long id,
+                           @RequestBody Post post)throws PostNotFoundException {
+        log.info("Inside updatePost of PostController, update data by id {}", id);
+        if (post == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        Post newDataPost = postService.updatePost(id, post);
+        return ResponseEntity.ok().body(newDataPost);
+    }
 
     @DeleteMapping("/{id}")
     public void deletePostById(@PathVariable("id") Long id)throws PostNotFoundException {
         log.info("Inside deletePostById of PostController, delete post by id {}", id);
         postService.deletePostById(id);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Post> fetchPostById(@PathVariable("id") Long id) throws PostNotFoundException {
+        log.info("Inside fetchPostById of PostController, get post by id {}", id);
+        Post postId = postService.fetchPostById(id);
+        return ResponseEntity.ok().body(postId);
+    }
+
 }

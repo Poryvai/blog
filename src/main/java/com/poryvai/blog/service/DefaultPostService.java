@@ -5,6 +5,7 @@ import com.poryvai.blog.error.PostNotFoundException;
 import com.poryvai.blog.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +16,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class DefaultPostService implements PostService{
 
-    @Autowired
     private final PostRepository postRepository;
 
     @Override
@@ -51,5 +51,25 @@ public class DefaultPostService implements PostService{
     @Override
     public void deletePostById(Long id)throws PostNotFoundException {
         postRepository.deleteById(id);
+    }
+
+    @Override
+    public Post fetchPostById(Long id)throws PostNotFoundException {
+        Optional<Post> post = postRepository.findById(id);
+
+        if (!post.isPresent()){
+            throw new PostNotFoundException("Post Id:" + id + ", Not Available");
+        }
+        return post.get();
+    }
+
+    @Override
+    public List<Post> fetchAllPostsByTitle(String title) {
+        return postRepository.findAllByTitle(title);
+    }
+
+    @Override
+    public List<Post> fetchAllPostsSortedByTitle() {
+        return postRepository.findAll(Sort.by(Sort.Direction.ASC, "title"));
     }
 }

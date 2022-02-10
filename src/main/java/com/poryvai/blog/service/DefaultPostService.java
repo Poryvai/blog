@@ -3,6 +3,7 @@ package com.poryvai.blog.service;
 import com.poryvai.blog.entity.Post;
 import com.poryvai.blog.error.PostNotFoundException;
 import com.poryvai.blog.repository.PostRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,10 +12,11 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class DefaultPostService implements PostService{
 
     @Autowired
-    PostRepository postRepository;
+    private final PostRepository postRepository;
 
     @Override
     public Post savePost(Post post) {

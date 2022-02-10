@@ -3,6 +3,7 @@ package com.poryvai.blog.controller;
 import com.poryvai.blog.entity.Post;
 import com.poryvai.blog.error.PostNotFoundException;
 import com.poryvai.blog.service.PostService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +16,12 @@ import java.util.List;
 import static org.springframework.http.HttpStatus.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping(path = "/api/v1/posts")
 @Slf4j
 public class PostController {
 
-    @Autowired
-    PostService postService;
+    private final PostService postService;
 
     @PostMapping
     public ResponseEntity<Post> savePost(@RequestBody Post post){
@@ -39,16 +40,16 @@ public class PostController {
         return ResponseEntity.ok().body(posts);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Post> updatePost(@PathVariable("id") Long id,
-                           @RequestBody Post post)throws PostNotFoundException {
-        log.info("Inside updatePost of PostController, update data by id {}", id);
-        if (post == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-        Post newDataPost = postService.updatePost(id, post);
-        return ResponseEntity.ok().body(newDataPost);
-    }
+//    @PutMapping("/{id}")
+//    public ResponseEntity<Post> updatePost(@PathVariable("id") Long id,
+//                           @RequestBody Post post)throws PostNotFoundException {
+//        log.info("Inside updatePost of PostController, update data by id {}", id);
+//        if (post == null) {
+//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+//        }
+//        Post newDataPost = postService.updatePost(id, post);
+//        return ResponseEntity.ok().body(newDataPost);
+//    }
 
     @DeleteMapping("/{id}")
     public void deletePostById(@PathVariable("id") Long id)throws PostNotFoundException {

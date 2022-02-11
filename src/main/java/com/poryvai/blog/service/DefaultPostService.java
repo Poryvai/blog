@@ -72,4 +72,19 @@ public class DefaultPostService implements PostService{
     public List<Post> fetchAllPostsSortedByTitle() {
         return postRepository.findAll(Sort.by(Sort.Direction.ASC, "title"));
     }
+
+    @Override
+    public List<Post> fetchAllTopPosts() {
+        return postRepository.findAllByStarTrue();
+    }
+
+    @Override
+    public Post updatePostSetStar(Long id) {
+        return postRepository.updatePostSetStar(id);
+    }
+
+    @Override
+    public Post updatePostUnsetStar(Long id) {
+        return postRepository.updatePostUnsetStar(id);
+    }
 }

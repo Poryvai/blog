@@ -37,6 +37,7 @@ public class PostController {
     public ResponseEntity<List<Post>> fetchPostList(@RequestParam(value = "title", required = false) String title,
                               @RequestParam(value = "sort", required = false) String sort) {
         List<Post> posts;
+
         log.info("Inside fetchAllPostsByTitle of PostController");
         if (title != null) {
             posts = postService.fetchAllPostsByTitle(title);
@@ -55,6 +56,7 @@ public class PostController {
     public ResponseEntity<Post> updatePost(@PathVariable("id") Long id,
                            @RequestBody Post post)throws PostNotFoundException {
         log.info("Inside updatePost of PostController, update data by id {}", id);
+
         if (post == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -73,6 +75,40 @@ public class PostController {
         log.info("Inside fetchPostById of PostController, get post by id {}", id);
         Post postId = postService.fetchPostById(id);
         return ResponseEntity.ok().body(postId);
+    }
+
+    @GetMapping("/star")
+    public ResponseEntity<Object> fetchAllPostsSortedByTitle() {
+       log.info("Inside fetchAllPostsSortedByTitle of PostController");
+        List<Post> posts = postService.fetchAllTopPosts();
+
+        if (posts == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.ok().body(posts);
+    }
+
+    @PutMapping("/{id}/star")
+    public ResponseEntity<Object> updatePostSetStar(@PathVariable Long id) {
+        log.info("Inside updatePostSetStar of PostController, get post by id markered star {}", id);
+        Post post = postService.updatePostSetStar(id);
+
+        if (post == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+            return ResponseEntity.ok().body(post);
+    }
+
+    @DeleteMapping("/{id}/star")
+    public ResponseEntity<Object> updatePostUnsetStar(@PathVariable Long id) {
+        log.info("Inside updatePostUnsetStar of PostController, get post by id unmarkered star {}", id);
+        Post post = postService.updatePostUnsetStar(id);
+
+        if (post == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+            return ResponseEntity.ok().body(post);
     }
 
 }

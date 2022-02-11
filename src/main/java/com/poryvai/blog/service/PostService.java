@@ -20,4 +20,10 @@ public interface PostService {
     public List<Post> fetchAllPostsByTitle(String title);
 
     public List<Post> fetchAllPostsSortedByTitle();
+
+    public List<Post> fetchAllTopPosts();
+
+    public Post updatePostSetStar(Long id);
+
+    public Post updatePostUnsetStar(Long id);
 }

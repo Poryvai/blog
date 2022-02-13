@@ -172,7 +172,7 @@ class PostControllerTest {
     void testFetchAllPostsSortedByTitleIfPostsIsEmpty() throws Exception {
         List<Post> posts = new ArrayList<>();
 
-        when(defaultPostService.fetchAllPostsSortedByTitle()).thenReturn(posts);
+        Mockito.when(defaultPostService.fetchAllPostsSortedByTitle()).thenReturn(posts);
         mockMvc.perform( get("/api/v1/posts/?sort=title")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -192,7 +192,7 @@ class PostControllerTest {
                 .build();
         posts.add(postOne);
 
-        when(defaultPostService.fetchAllPostsByTitle("post one")).thenReturn(posts);
+        Mockito.when(defaultPostService.fetchAllPostsByTitle("post one")).thenReturn(posts);
         mockMvc.perform( get("/api/v1/posts/?title={title}", "post one")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -204,7 +204,7 @@ class PostControllerTest {
     void testFetchAllPostsByTitleIfPostsIsEmpty() throws Exception {
         List<Post> posts = new ArrayList<>();
 
-        when(defaultPostService.fetchAllPostsByTitle("post one")).thenReturn(posts);
+        Mockito.when(defaultPostService.fetchAllPostsByTitle("post one")).thenReturn(posts);
         mockMvc.perform( get("/api/v1/posts/?title={title}", "post one")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -239,7 +239,7 @@ class PostControllerTest {
                 .build();
         posts.add(postThree);
 
-        when(defaultPostService.fetchAllTopPosts()).thenReturn(posts);
+        Mockito.when(defaultPostService.fetchAllTopPosts()).thenReturn(posts);
         mockMvc.perform( get("/api/v1/posts/star")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -254,7 +254,7 @@ class PostControllerTest {
     void testFetchAllTopPostsIfPostsIsEmpty() throws Exception {
         List<Post> posts = new ArrayList<>();
 
-        when(defaultPostService.fetchAllTopPosts()).thenReturn(posts);
+        Mockito.when(defaultPostService.fetchAllTopPosts()).thenReturn(posts);
         mockMvc.perform( get("/api/v1/posts/star")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
@@ -270,7 +270,7 @@ class PostControllerTest {
                 .star(true)
                 .build();
 
-        when(defaultPostService.updatePostSetStar(1L)).thenReturn(postOne);
+        Mockito.when(defaultPostService.updatePostSetStar(1L)).thenReturn(postOne);
         mockMvc.perform(put("/api/v1/posts/{id}/star", 1)
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.star").value(true))
@@ -297,7 +297,7 @@ class PostControllerTest {
                 .star(false)
                 .build();
 
-        when(defaultPostService.updatePostUnsetStar(1L)).thenReturn(postOne);
+        Mockito.when(defaultPostService.updatePostUnsetStar(1L)).thenReturn(postOne);
         mockMvc.perform( MockMvcRequestBuilders
                         .delete("/api/v1/posts/{id}/star", 1)
                         .contentType(MediaType.APPLICATION_JSON))

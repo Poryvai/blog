@@ -24,13 +24,14 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    public ResponseEntity<Post> savePost(@RequestBody Post post){
-        log.info("Inside savePsot of PostController, add {}", post);
+    public ResponseEntity<Object> savePost(@RequestBody Post post){
+        log.info("Inside savePost of PostController, add {}", post);
         if (post == null) {
             return new ResponseEntity<>(BAD_REQUEST);
         }
         Post newPost = postService.savePost(post);
-        return ResponseEntity.status(201).body(newPost);
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(newPost, CREATED);
+        return responseEntity;
     }
 
     @GetMapping
@@ -41,27 +42,40 @@ public class PostController {
         log.info("Inside fetchAllPostsByTitle of PostController");
         if (title != null) {
             posts = postService.fetchAllPostsByTitle(title);
+            if (posts.isEmpty()){
+                return new ResponseEntity<>(NOT_FOUND);
+            }
         } else if (sort != null) {
             log.info("Inside fetchAllPostsSortedByTitle of PostController");
             posts = postService.fetchAllPostsSortedByTitle();
+            if (posts.isEmpty()){
+                return new ResponseEntity<>(NOT_FOUND);
+            }
         } else {
             log.info("Inside fetchPostList of PostController");
             posts = postService.fetchPostList();
+            if (posts.isEmpty()){
+                return new ResponseEntity<>(NOT_FOUND);
+            }
         }
 
-        return ResponseEntity.ok().body(posts);
+        ResponseEntity<List<Post>> responseEntity = new ResponseEntity<>(posts, OK);
+        return responseEntity;
+       // return ResponseEntity.status(OK).body(posts);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> updatePost(@PathVariable("id") Long id,
+    public ResponseEntity<Object> updatePost(@PathVariable("id") Long id,
                            @RequestBody Post post)throws PostNotFoundException {
         log.info("Inside updatePost of PostController, update data by id {}", id);
+        Post newDataPost = postService.updatePost(id, post);
 
         if (post == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(BAD_REQUEST);
         }
-        Post newDataPost = postService.updatePost(id, post);
-        return ResponseEntity.ok().body(newDataPost);
+
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(newDataPost, OK);
+        return responseEntity;
     }
 
     @DeleteMapping("/{id}")
@@ -74,18 +88,26 @@ public class PostController {
     public ResponseEntity<Post> fetchPostById(@PathVariable("id") Long id) throws PostNotFoundException {
         log.info("Inside fetchPostById of PostController, get post by id {}", id);
         Post postId = postService.fetchPostById(id);
-        return ResponseEntity.ok().body(postId);
+
+        if (postId == null) {
+            return new ResponseEntity<>(BAD_REQUEST);
+        }
+
+        ResponseEntity<Post> responseEntity = new ResponseEntity<>(postId, OK);
+        return responseEntity;
     }
 
     @GetMapping("/star")
-    public ResponseEntity<Object> fetchAllPostsSortedByTitle() {
-       log.info("Inside fetchAllPostsSortedByTitle of PostController");
+    public ResponseEntity<Object> fetchAllTopPosts() {
+       log.info("Inside fetchAllTopPosts of PostController");
         List<Post> posts = postService.fetchAllTopPosts();
 
-        if (posts == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (posts.isEmpty()) {
+            return new ResponseEntity<>(NOT_FOUND);
         }
-        return ResponseEntity.ok().body(posts);
+
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(posts, OK);
+        return responseEntity;
     }
 
     @PutMapping("/{id}/star")
@@ -94,10 +116,11 @@ public class PostController {
         Post post = postService.updatePostSetStar(id);
 
         if (post == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(BAD_REQUEST);
         }
 
-            return ResponseEntity.ok().body(post);
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(post, OK);
+        return responseEntity;
     }
 
     @DeleteMapping("/{id}/star")
@@ -106,9 +129,11 @@ public class PostController {
         Post post = postService.updatePostUnsetStar(id);
 
         if (post == null) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(BAD_REQUEST);
         }
-            return ResponseEntity.ok().body(post);
+
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(post, OK);
+        return responseEntity;
     }
 
 }

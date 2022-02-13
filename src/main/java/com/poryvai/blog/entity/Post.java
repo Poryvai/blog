@@ -3,6 +3,8 @@ package com.poryvai.blog.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -20,5 +22,8 @@ public class Post {
     private String content;
     @Column(columnDefinition = "boolean default false")
     private boolean star;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
 }

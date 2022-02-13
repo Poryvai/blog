@@ -1,16 +1,19 @@
 package com.poryvai.blog.controller;
 
+import com.poryvai.blog.dto.CommentWithoutPostDto;
+import com.poryvai.blog.dto.PostWithCommentsDto;
+import com.poryvai.blog.dto.PostWithoutCommentsDto;
+import com.poryvai.blog.entity.Comment;
 import com.poryvai.blog.entity.Post;
 import com.poryvai.blog.error.PostNotFoundException;
 import com.poryvai.blog.service.PostService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.*;
@@ -35,33 +38,39 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Post>> fetchPostList(@RequestParam(value = "title", required = false) String title,
-                              @RequestParam(value = "sort", required = false) String sort) {
+    public ResponseEntity<Object> fetchPostList(@RequestParam(value = "title", required = false) String title,
+                                                @RequestParam(value = "sort", required = false) String sort) {
         List<Post> posts;
 
         log.info("Inside fetchAllPostsByTitle of PostController");
         if (title != null) {
+
             posts = postService.fetchAllPostsByTitle(title);
-            if (posts.isEmpty()){
+            if (posts.isEmpty()) {
                 return new ResponseEntity<>(NOT_FOUND);
+            } else {
+                List<PostWithCommentsDto> postWithCommentsDto = getPostWithCommentsDtos(posts);
+                return ResponseEntity.ok(postWithCommentsDto);
             }
         } else if (sort != null) {
             log.info("Inside fetchAllPostsSortedByTitle of PostController");
             posts = postService.fetchAllPostsSortedByTitle();
-            if (posts.isEmpty()){
+            if (posts.isEmpty()) {
                 return new ResponseEntity<>(NOT_FOUND);
+            } else {
+                List<PostWithCommentsDto> postWithCommentsDtos = getPostWithCommentsDtos(posts);
+                return ResponseEntity.ok(postWithCommentsDtos);
             }
         } else {
             log.info("Inside fetchPostList of PostController");
             posts = postService.fetchPostList();
-            if (posts.isEmpty()){
+            if (posts.isEmpty()) {
                 return new ResponseEntity<>(NOT_FOUND);
             }
+            List<PostWithCommentsDto> postWithCommentsDto = getPostWithCommentsDtos(posts);
+            ResponseEntity<Object> responseEntity = new ResponseEntity<>(postWithCommentsDto, OK);
+            return responseEntity;
         }
-
-        ResponseEntity<List<Post>> responseEntity = new ResponseEntity<>(posts, OK);
-        return responseEntity;
-       // return ResponseEntity.status(OK).body(posts);
     }
 
     @PutMapping("/{id}")
@@ -85,15 +94,15 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Post> fetchPostById(@PathVariable("id") Long id) throws PostNotFoundException {
+    public ResponseEntity<Object> fetchPostById(@PathVariable("id") Long id) throws PostNotFoundException {
         log.info("Inside fetchPostById of PostController, get post by id {}", id);
         Post postId = postService.fetchPostById(id);
 
         if (postId == null) {
             return new ResponseEntity<>(BAD_REQUEST);
         }
-
-        ResponseEntity<Post> responseEntity = new ResponseEntity<>(postId, OK);
+        PostWithoutCommentsDto postWithoutCommentsDto = getPostWithOutCommentsDto(postId);
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(postWithoutCommentsDto, OK);
         return responseEntity;
     }
 
@@ -106,7 +115,8 @@ public class PostController {
             return new ResponseEntity<>(NOT_FOUND);
         }
 
-        ResponseEntity<Object> responseEntity = new ResponseEntity<>(posts, OK);
+        List<PostWithCommentsDto> postWithCommentsDtos = getPostWithCommentsDtos(posts);
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(postWithCommentsDtos, OK);
         return responseEntity;
     }
 
@@ -118,8 +128,8 @@ public class PostController {
         if (post == null) {
             return new ResponseEntity<>(BAD_REQUEST);
         }
-
-        ResponseEntity<Object> responseEntity = new ResponseEntity<>(post, OK);
+        PostWithCommentsDto postWithCommentsDto = getPostWithCommentsDto(post);
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(postWithCommentsDto, OK);
         return responseEntity;
     }
 
@@ -131,9 +141,69 @@ public class PostController {
         if (post == null) {
             return new ResponseEntity<>(BAD_REQUEST);
         }
-
-        ResponseEntity<Object> responseEntity = new ResponseEntity<>(post, OK);
+        PostWithCommentsDto postWithCommentsDto = getPostWithCommentsDto(post);
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(postWithCommentsDto, OK);
         return responseEntity;
+    }
+
+    private List<PostWithCommentsDto> getPostWithCommentsDtos(List<Post> posts) {
+        List<PostWithCommentsDto> postWithCommentsDtos = new ArrayList<>(posts.size());
+        for (Post post : posts) {
+            List<Comment> comments = post.getComments();
+            List<CommentWithoutPostDto> commentWithoutPostDtos = new ArrayList<>(comments.size());
+
+            for (Comment comment : comments) {
+                CommentWithoutPostDto commentWithoutPostDto = CommentWithoutPostDto.builder()
+                        .creationDate(comment.getCreationDate())
+                        .id(comment.getId())
+                        .text(comment.getText())
+                        .build();
+                commentWithoutPostDtos.add(commentWithoutPostDto);
+            }
+
+            PostWithCommentsDto postWithCommentsDto = PostWithCommentsDto.builder()
+                    .id(post.getId())
+                    .content(post.getContent())
+                    .star(post.isStar())
+                    .title(post.getTitle())
+                    .comments(commentWithoutPostDtos)
+                    .build();
+
+            postWithCommentsDtos.add(postWithCommentsDto);
+        }
+        return postWithCommentsDtos;
+    }
+
+    private PostWithCommentsDto getPostWithCommentsDto(Post post) {
+        List<Comment> comments = post.getComments();
+        List<CommentWithoutPostDto> commentWithoutPostDtos = new ArrayList<>(comments.size());
+        for (Comment comment : comments) {
+            CommentWithoutPostDto commentWithoutPostDto = CommentWithoutPostDto.builder()
+                    .text(comment.getText())
+                    .id(comment.getId())
+                    .creationDate(comment.getCreationDate())
+                    .build();
+            commentWithoutPostDtos.add(commentWithoutPostDto);
+        }
+        PostWithCommentsDto postWithCommentsDto = PostWithCommentsDto.builder()
+                .title(post.getTitle())
+                .id(post.getId())
+                .star(post.isStar())
+                .content(post.getContent())
+                .comments(commentWithoutPostDtos)
+                .build();
+
+        return postWithCommentsDto;
+    }
+
+    private PostWithoutCommentsDto getPostWithOutCommentsDto(Post post) {
+        PostWithoutCommentsDto postWithoutCommentsDto = PostWithoutCommentsDto.builder()
+                .title(post.getTitle())
+                .id(post.getId())
+                .star(post.isStar())
+                .content(post.getContent())
+                .build();
+        return postWithoutCommentsDto;
     }
 
 }

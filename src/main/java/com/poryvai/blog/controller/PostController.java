@@ -146,26 +146,39 @@ public class PostController {
         return responseEntity;
     }
 
+    @GetMapping("/{id}/full")
+    public ResponseEntity<Object> fetchPostByIdWithAllComments(@PathVariable("id") Long id) throws PostNotFoundException {
+        Post post = postService.fetchPostById(id);
+
+        if (post == null) {
+            return new ResponseEntity<>(NOT_FOUND);
+        }
+
+        PostWithCommentsDto postWithCommentsDto = getPostWithCommentsDto(post);
+        log.info("Inside fetchPostByIdWithAllComments of PostController, get full post {} ", postWithCommentsDto);
+        ResponseEntity<Object> responseEntity = new ResponseEntity<>(postWithCommentsDto, OK);
+        return responseEntity;
+        }
+
     private List<PostWithCommentsDto> getPostWithCommentsDtos(List<Post> posts) {
         List<PostWithCommentsDto> postWithCommentsDtos = new ArrayList<>(posts.size());
         for (Post post : posts) {
             List<Comment> comments = post.getComments();
             List<CommentWithoutPostDto> commentWithoutPostDtos = new ArrayList<>(comments.size());
-
             for (Comment comment : comments) {
                 CommentWithoutPostDto commentWithoutPostDto = CommentWithoutPostDto.builder()
-                        .creationDate(comment.getCreationDate())
                         .id(comment.getId())
                         .text(comment.getText())
+                        .creationDate(comment.getCreationDate())
                         .build();
                 commentWithoutPostDtos.add(commentWithoutPostDto);
             }
 
             PostWithCommentsDto postWithCommentsDto = PostWithCommentsDto.builder()
                     .id(post.getId())
+                    .title(post.getTitle())
                     .content(post.getContent())
                     .star(post.isStar())
-                    .title(post.getTitle())
                     .comments(commentWithoutPostDtos)
                     .build();
 
@@ -179,17 +192,17 @@ public class PostController {
         List<CommentWithoutPostDto> commentWithoutPostDtos = new ArrayList<>(comments.size());
         for (Comment comment : comments) {
             CommentWithoutPostDto commentWithoutPostDto = CommentWithoutPostDto.builder()
-                    .text(comment.getText())
                     .id(comment.getId())
+                    .text(comment.getText())
                     .creationDate(comment.getCreationDate())
                     .build();
             commentWithoutPostDtos.add(commentWithoutPostDto);
         }
         PostWithCommentsDto postWithCommentsDto = PostWithCommentsDto.builder()
-                .title(post.getTitle())
                 .id(post.getId())
-                .star(post.isStar())
+                .title(post.getTitle())
                 .content(post.getContent())
+                .star(post.isStar())
                 .comments(commentWithoutPostDtos)
                 .build();
 
@@ -198,10 +211,10 @@ public class PostController {
 
     private PostWithoutCommentsDto getPostWithOutCommentsDto(Post post) {
         PostWithoutCommentsDto postWithoutCommentsDto = PostWithoutCommentsDto.builder()
-                .title(post.getTitle())
                 .id(post.getId())
-                .star(post.isStar())
+                .title(post.getTitle())
                 .content(post.getContent())
+                .star(post.isStar())
                 .build();
         return postWithoutCommentsDto;
     }

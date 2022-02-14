@@ -26,4 +26,5 @@ public interface PostService {
      Post updatePostSetStar(Long id);
 
      Post updatePostUnsetStar(Long id);
+
 }

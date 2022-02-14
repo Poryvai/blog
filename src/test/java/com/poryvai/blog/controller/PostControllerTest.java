@@ -1,6 +1,7 @@
 package com.poryvai.blog.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.poryvai.blog.entity.Comment;
 import com.poryvai.blog.entity.Post;
 import com.poryvai.blog.service.DefaultPostService;
 import org.hamcrest.Matchers;
@@ -15,9 +16,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.time.Month.*;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -313,5 +317,44 @@ class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(null)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testFetchPostByIdWithAllComments() throws Exception {
+        Post post = Post.builder()
+                .id(1L)
+                .content("test content")
+                .title("test title")
+                .star(true)
+                .build();
+        Comment firstComment = Comment.builder()
+                .id(1L)
+                .creationDate(LocalDateTime.of(2022, FEBRUARY, 14, 03, 00, 37, 5))
+                .text("test text")
+                .post(post)
+                .build();
+        Comment secondComment = Comment.builder()
+                .id(2L)
+                .creationDate(LocalDateTime.of(2022, FEBRUARY, 14, 03, 15, 18, 4))
+                .text("another test text")
+                .post(post)
+                .build();
+
+        List<Comment> commentList = List.of(firstComment, secondComment);
+        post.setComments(commentList);
+        //Optional<Post> optionalPost = Optional.of(post);
+
+        Mockito.when(defaultPostService.fetchPostById(1L)).thenReturn(post);
+        mockMvc.perform(MockMvcRequestBuilders
+                        .get("/api/v1/posts/{id}/full", 1))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.size()").value(5))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.star").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.title").value("test title"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.comments.size()").value(2))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.comments.length()").value(2))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.comments[0].text").value("test text"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.comments[1].text").value("another test text"));
+
     }
 }

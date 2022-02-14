@@ -87,4 +87,5 @@ public class DefaultPostService implements PostService{
     public Post updatePostUnsetStar(Long id) {
         return postRepository.updatePostUnsetStar(id);
     }
+
 }
